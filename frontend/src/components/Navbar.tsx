@@ -1,47 +1,96 @@
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { MoonIcon, SunIcon, Bot } from 'lucide-react';
+import {
+  Activity,
+  Component,
+  HomeIcon,
+  Mail,
+  Package,
+  ScrollText,
+  SunMoon,
+} from 'lucide-react';
+import { Dock, DockIcon, DockItem, DockLabel } from '@/components/ui/dock';
 import { useTheme } from './theme-provider';
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
 
+  const dockItems = [
+    {
+      title: 'Home',
+      icon: (
+        <HomeIcon className='h-full w-full text-neutral-600 dark:text-neutral-300' />
+      ),
+      href: '/',
+    },
+    {
+      title: 'Products',
+      icon: (
+        <Package className='h-full w-full text-neutral-600 dark:text-neutral-300' />
+      ),
+      href: '/products',
+    },
+    {
+      title: 'Components',
+      icon: (
+        <Component className='h-full w-full text-neutral-600 dark:text-neutral-300' />
+      ),
+      href: '/components',
+    },
+    {
+      title: 'Feed',
+      icon: (
+        <Activity className='h-full w-full text-neutral-600 dark:text-neutral-300' />
+      ),
+      href: '/feed',
+    },
+    {
+      title: 'Change Log',
+      icon: (
+        <ScrollText className='h-full w-full text-neutral-600 dark:text-neutral-300' />
+      ),
+      href: '/changelog',
+    },
+    {
+      title: 'Chat',
+      icon: (
+        <Mail className='h-full w-full text-neutral-600 dark:text-neutral-300' />
+      ),
+      href: '/chat',
+    },
+    {
+      title: theme === 'light' ? 'Dark Mode' : 'Light Mode',
+      icon: (
+        <SunMoon className='h-full w-full text-neutral-600 dark:text-neutral-300' />
+      ),
+      onClick: () => setTheme(theme === 'light' ? 'dark' : 'light'),
+    },
+  ];
+
   return (
-    <nav className="border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <Bot className="h-8 w-8" />
-              <span className="text-xl font-bold">AI Assistant</span>
-            </Link>
-          </div>
-          <div className="hidden md:block">
-            <div className="flex items-center space-x-4">
-              <Link to="/">
-                <Button variant="ghost">Home</Button>
-              </Link>
-              <Link to="/features">
-                <Button variant="ghost">Features</Button>
-              </Link>
-              <Link to="/pricing">
-                <Button variant="ghost">Pricing</Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+    <div className='fixed bottom-2 left-1/2 max-w-full -translate-x-1/2'>
+      <Dock className='items-end pb-3'>
+        {dockItems.map((item, idx) => (
+          item.onClick ? (
+            <div key={idx} onClick={item.onClick} className="cursor-pointer">
+              <DockItem
+                className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'
               >
-                {theme === "light" ? (
-                  <MoonIcon className="h-5 w-5" />
-                ) : (
-                  <SunIcon className="h-5 w-5" />
-                )}
-              </Button>
+                <DockLabel>{item.title}</DockLabel>
+                <DockIcon>{item.icon}</DockIcon>
+              </DockItem>
             </div>
-          </div>
-        </div>
-      </div>
-    </nav>
+          ) : (
+            <Link key={idx} to={item.href}>
+              <DockItem
+                className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'
+              >
+                <DockLabel>{item.title}</DockLabel>
+                <DockIcon>{item.icon}</DockIcon>
+              </DockItem>
+            </Link>
+          )
+        ))}
+      </Dock>
+    </div>
   );
 }

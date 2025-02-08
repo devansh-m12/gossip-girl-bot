@@ -58,7 +58,9 @@ export function ThemeProvider({
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>
-      {children}
+      <div className="min-h-screen flex flex-col">
+        {children}
+      </div>
     </ThemeProviderContext.Provider>
   )
 }
