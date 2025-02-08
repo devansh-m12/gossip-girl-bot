@@ -2,6 +2,9 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    serverActions: true,
+  },
   async headers() {
     return [
       {
@@ -15,6 +18,13 @@ const nextConfig = {
         ],
       },
     ];
+  },
+  serverRuntimeConfig: {
+    // Will only be available on the server side
+    puppeteer: {
+      // Increase timeout for image generation
+      timeout: 30000,
+    },
   },
 };
 
