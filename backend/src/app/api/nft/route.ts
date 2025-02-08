@@ -1,244 +1,175 @@
-import { NextRequest, NextResponse } from "next/server";
-import { 
-    createNft, 
-    fetchDigitalAsset, 
-    mplTokenMetadata,
-} from "@metaplex-foundation/mpl-token-metadata";
-import {
-    airdropIfRequired,
-} from "@solana-developers/helpers";
-import {
-    createUmi,
-} from "@metaplex-foundation/umi-bundle-defaults";
-import { 
-    generateSigner, 
-    percentAmount,
-    keypairIdentity,
-    publicKey,
-} from "@metaplex-foundation/umi";
-import {
-    Connection,
-    LAMPORTS_PER_SOL,
-    PublicKey,
-    Keypair,
-} from "@solana/web3.js";
-import bs58 from "bs58";
+import { NextResponse } from "next/server";
+import privy from "@/utils";
+import { BASE_SEPOLIA } from "@/constants";
+import { ethers } from "ethers";
+import abi from "@/lib/abi.json";
+import { createThirdwebClient, defineChain, getContract, prepareContractCall } from "thirdweb";
 
-// Helper function to get keypair from environment variables
-function getKeypairFromEnv(): Keypair {
-    const privateKeyString = process.env.PRIVATE_KEY;
-    if (!privateKeyString) {
-        throw new Error('PRIVATE_KEY environment variable is not set');
+// Environment variable validation
+const requiredEnvVars = {
+    WALLET_ID: process.env.WALLET_ID,
+    NFT_CONTRACT_ADDRESS: process.env.NFT_CONTRACT_ADDRESS
+};
+
+// Validate environment variables on startup
+function validateEnvironment() {
+    const missingVars = Object.entries(requiredEnvVars)
+        .filter(([_, value]) => !value)
+        .map(([key]) => key);
+
+    if (missingVars.length > 0) {
+        throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
     }
-    
+}
+
+// Process and validate image URL or base64
+async function processImage(imageInput: string): Promise<string> {
     try {
-        const decodedKey = bs58.decode(privateKeyString);
-        return Keypair.fromSecretKey(decodedKey);
-    } catch (error) {
-        throw new Error('Invalid private key format');
-    }
-}
-
-// Improved confirmation helper with exponential backoff
-async function waitForConfirmation(
-    umi: any, 
-    mintAddress: string, 
-    maxAttempts = 10,
-    initialDelay = 1000
-): Promise<any> {
-    let delay = initialDelay;
-    
-    for (let i = 0; i < maxAttempts; i++) {
-        try {
-            await new Promise(resolve => setTimeout(resolve, delay));
-            const nft = await fetchDigitalAsset(umi, publicKey(mintAddress));
-            
-            if (nft && nft.metadata) {
-                return nft;
-            }
-            
-            delay *= 2;
-        } catch (error) {
-            if (i === maxAttempts - 1) {
-                throw new Error(`Failed to confirm NFT creation after ${maxAttempts} attempts`);
-            }
-            delay *= 2;
-            continue;
-        }
-    }
-    
-    throw new Error('Failed to confirm NFT creation');
-}
-
-// Helper to validate URI format
-function isValidUri(uri: string): boolean {
-    try {
-        new URL(uri);
-        return true;
-    } catch {
-        return false;
-    }
-}
-
-// Helper function to serialize NFT response
-function serializeNftResponse(data: any): any {
-    return JSON.parse(JSON.stringify(data, (_, value) =>
-        typeof value === 'bigint' ? value.toString() : value
-    ));
-}
-
-// GET endpoint to fetch NFT details
-export async function GET(req: NextRequest) {
-    try {
-        const searchParams = req.nextUrl.searchParams;
-        const mintAddress = searchParams.get('mintAddress');
-
-        if (!mintAddress) {
-            return NextResponse.json(
-                { error: 'Missing mintAddress parameter' },
-                { status: 400 }
-            );
-        }
-
-        // Validate mint address format
-        try {
-            new PublicKey(mintAddress);
-        } catch {
-            return NextResponse.json(
-                { error: 'Invalid mint address format' },
-                { status: 400 }
-            );
-        }
-
-        const connection = new Connection(
-            "https://api.devnet.solana.com",
-            { commitment: 'confirmed', confirmTransactionInitialTimeout: 60000 }
-        );
-        const umi = createUmi(connection.rpcEndpoint);
-        umi.use(mplTokenMetadata());
-
-        const nft = await fetchDigitalAsset(umi, publicKey(mintAddress));
-
-        return NextResponse.json(serializeNftResponse({
-            success: true,
-            nft: nft
-        }));
-
-    } catch (error) {
-        console.error('Error fetching NFT:', error);
-        const message = error instanceof Error ? error.message : 'Failed to fetch NFT';
-        return NextResponse.json(
-            { error: message },
-            { status: 500 }
-        );
-    }
-}
-
-// POST endpoint to create a new NFT
-export async function POST(req: NextRequest) {
-    try {
-        const body = await req.json();
-        const { name, uri, collectionAddress } = body;
-
-        // Validate required parameters
-        if (!name || !uri) {
-            return NextResponse.json(
-                { error: 'Missing required parameters: name and uri are required' },
-                { status: 400 }
-            );
-        }
-
-        // Validate URI format
-        if (!isValidUri(uri)) {
-            return NextResponse.json(
-                { error: 'Invalid URI format' },
-                { status: 400 }
-            );
-        }
-
-        // Validate collection address if provided
-        if (collectionAddress) {
-            try {
-                new PublicKey(collectionAddress);
-            } catch {
-                return NextResponse.json(
-                    { error: 'Invalid collection address format' },
-                    { status: 400 }
-                );
-            }
-        }
-
-        // Set up connection
-        const connection = new Connection(
-            "https://api.devnet.solana.com",
-            { commitment: 'confirmed', confirmTransactionInitialTimeout: 60000 }
-        );
+        if (imageInput.startsWith('data:image')) {
+            // Convert base64 to URL by uploading to your preferred storage
+            // For this example, we'll return the base64 directly
+            return imageInput;
+        } 
         
-        // Get and validate user keypair
-        const user = getKeypairFromEnv();
-
-        // Ensure sufficient SOL balance
-        try {
-            await airdropIfRequired(
-                connection,
-                user.publicKey,
-                1 * LAMPORTS_PER_SOL,
-                0.5 * LAMPORTS_PER_SOL
-            );
-        } catch (error) {
-            console.error('Airdrop failed:', error);
-            throw new Error('Failed to ensure sufficient SOL balance');
+        if (imageInput.startsWith('http')) {
+            // Validate URL
+            const response = await fetch(imageInput);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch image: ${response.statusText}`);
+            }
+            return imageInput;
         }
 
-        // Set up Umi
-        const umi = createUmi(connection.rpcEndpoint);
-        umi.use(mplTokenMetadata());
-        const umiUser = umi.eddsa.createKeypairFromSecretKey(user.secretKey);
-        umi.use(keypairIdentity(umiUser));
+        throw new Error('Invalid image format. Must be base64 or URL');
+    } catch (error: any) {
+        throw new Error(`Image processing failed: ${error.message}`);
+    }
+}
 
-        // Generate NFT mint signer
-        const mint = generateSigner(umi);
+// Generate metadata object
+function generateMetadata(name: string, description: string, image: string) {
+    return {
+        name,
+        description,
+        image,
+        attributes: [
+            {
+                trait_type: "Created",
+                value: new Date().toISOString()
+            }
+        ]
+    };
+}
 
-        // Prepare NFT creation parameters
-        const nftParams: any = {
-            mint,
-            name,
-            uri,
-            sellerFeeBasisPoints: percentAmount(0),
-        };
+// Input validation
+interface MintRequest {
+    name: string;
+    description: string;
+    image: string;
+}
 
-        // Add collection if provided
-        if (collectionAddress) {
-            nftParams.collection = {
-                key: publicKey(collectionAddress),
-                verified: false,
-            };
+function validateInput(input: any): MintRequest {
+    const { name, description, image } = input;
+    
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+        throw new Error('Invalid or missing name');
+    }
+    
+    if (!description || typeof description !== 'string') {
+        throw new Error('Invalid or missing description');
+    }
+    
+    if (!image || typeof image !== 'string') {
+        throw new Error('Invalid or missing image');
+    }
+
+    return { name: name.trim(), description: description.trim(), image };
+}
+
+export async function POST(request: Request) {
+    try {
+        // Validate environment first
+        validateEnvironment();
+
+        // Parse and validate request body
+        const rawBody = await request.json();
+        const { name, description, image } = validateInput(rawBody);
+
+        // Get wallet from Privy
+        const wallet = await privy.walletApi.getWallet({ 
+            id: requiredEnvVars.WALLET_ID as string 
+        });
+        
+        if (!wallet?.address) {
+            throw new Error('Failed to retrieve valid wallet');
         }
 
-        // Create the NFT
-        const transaction = await createNft(umi, nftParams);
-        await transaction.sendAndConfirm(umi);
+        // Process image
+        const processedImage = await processImage(image);
 
-        // Wait for the NFT to be available
-        const createdNft = await waitForConfirmation(
-            umi,
-            mint.publicKey,
-            10,
-            2000
-        );
+        // Generate metadata
+        const metadata = generateMetadata(name, description, processedImage);
 
-        return NextResponse.json(serializeNftResponse({
+        // Convert metadata to base64 encoded URI
+        const jsonString = JSON.stringify(metadata);
+        const base64Metadata = Buffer.from(jsonString).toString('base64');
+        const uri = `data:application/json;base64,${base64Metadata}`;
+
+        const client = createThirdwebClient({
+            clientId: wallet.id,
+          });
+
+        // Create contract interface
+        const contract = getContract({
+            client,
+            chain: defineChain(84532),
+            address: requiredEnvVars.NFT_CONTRACT_ADDRESS as string,
+          });
+        
+        // Encode the mintTo function call
+        const preparedCall = await prepareContractCall({
+            contract,
+            method:
+              "function mintTo(address _to, string _uri) returns (uint256)",
+            params: [wallet.address, uri],
+          });
+
+        console.log(preparedCall);
+        const encodedCallData = await preparedCall?.data();
+
+        // Send transaction
+        const transactionResult = await privy.walletApi.ethereum.sendTransaction({
+            walletId: process.env.WALLET_ID as string,
+            caip2: `eip155:${BASE_SEPOLIA.chainId}`,
+            method: "signAndSendTransaction", // Indicates to sign and broadcast the transaction
+            transaction: {
+              to: process.env.NFT_CONTRACT_ADDRESS as string,
+              data: encodedCallData, // Must be a string, not an object
+              value: "0x0",
+              chainId: BASE_SEPOLIA.chainId,
+            },
+          });
+
+        return NextResponse.json({
             success: true,
-            nft: createdNft,
-            mintAddress: mint.publicKey
-        }));
+            transaction: transactionResult,
+            uri,
+            metadata
+        }, { status: 200 });
 
-    } catch (error) {
-        console.error('Error creating NFT:', error);
-        const message = error instanceof Error ? error.message : 'Failed to create NFT';
-        return NextResponse.json(
-            { error: message },
-            { status: 500 }
-        );
+    } catch (error: any) {
+        console.error("NFT Minting Error:", error);
+        
+        // Determine appropriate status code
+        let statusCode = 500;
+        if (error.message.includes('Invalid or missing')) {
+            statusCode = 400;
+        }
+
+        return NextResponse.json({
+            success: false,
+            error: error.message,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        }, { status: statusCode });
     }
 }
