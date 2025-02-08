@@ -9,12 +9,11 @@ interface EtherscanResponse {
 // GET /api/privy/balance/{address}?network={network}
 export async function GET(
   request: NextRequest,
-  { params }: { params: { address: string } }
 ) {
   try {
     const { searchParams } = new URL(request.url);
     const network = searchParams.get('network') || 'base-sepolia';
-    const address = params.address;
+    const address = searchParams.get('address');
     
     const baseUrl = (() => {
       switch (network) {

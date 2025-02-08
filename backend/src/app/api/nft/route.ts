@@ -127,7 +127,7 @@ export async function POST(request: Request) {
           });
         
         // Encode the mintTo function call
-        const preparedCall = await prepareContractCall({
+        const preparedCall:any = await prepareContractCall({
             contract,
             method:
               "function mintTo(address _to, string _uri) returns (uint256)",
