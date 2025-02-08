@@ -30,11 +30,11 @@ export default function Navbar() {
       href: '/products',
     },
     {
-      title: 'Components',
+      title: 'Collection',
       icon: (
         <Component className='h-full w-full text-neutral-600 dark:text-neutral-300' />
       ),
-      href: '/components',
+      href: '/collection',
     },
     {
       title: 'Feed',

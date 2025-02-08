@@ -1,11 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
+import '@coinbase/onchainkit/styles.css'; 
 // import Features from './pages/Features';
 // import Pricing from './pages/Pricing';
 import { ThemeProvider } from './components/theme-provider';
 import Feed from './pages/feed';
 import Chat from './pages/chat';
+import Collection from './pages/collection';
 
 function App() {
   return (
@@ -23,6 +25,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/chat" element={<Chat />} />
+                <Route path="/collection" element={<Collection />} />
                 {/* <Route path="/features" element={<Features />} />
                 <Route path="/pricing" element={<Pricing />} /> */}
               </Routes>
