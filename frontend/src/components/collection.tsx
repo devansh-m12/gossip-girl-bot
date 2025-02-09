@@ -85,6 +85,7 @@ export default function Collection() {
         mimeType: nft.media?.[0]?.format || "image/jpeg",
         attributes: nft.metadata?.attributes || []
       }));
+      formattedNFTs.reverse();
 
       setNFTs(formattedNFTs);
     } catch (err) {
