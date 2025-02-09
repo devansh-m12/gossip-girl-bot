@@ -14,14 +14,14 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Router>
-        <div className="min-h-screen flex flex-col">
+        <div className="flex flex-col">
           <div className="w-full">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-1000">
+            <div className="w-full px-4 sm:px-6 lg:px-8 z-1000">
               <Navbar />
             </div>
           </div>
-          <main className="flex-1 w-full">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <main className="flex-1 pb-24">
+            <div className="w-full px-4 sm:px-6 lg:px-8">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/feed" element={<Feed />} />
