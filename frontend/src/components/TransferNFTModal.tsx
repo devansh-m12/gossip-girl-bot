@@ -42,7 +42,9 @@ export function TransferNFTModal({ isOpen, onClose, tokenId, onTransfer }: Trans
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Transfer NFT</DialogTitle>
-          <DialogDescription>Enter the recipient's address to transfer NFT #{tokenId}</DialogDescription>
+          <DialogDescription className="break-all">
+            Enter the recipient's address to transfer NFT #{tokenId}
+          </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">

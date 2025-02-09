@@ -12,26 +12,10 @@ export async function GET(
 ) {
   try {
     const { searchParams } = new URL(request.url);
-    const network = searchParams.get('network') || 'base-sepolia';
     const address = searchParams.get('address');
     
-    const baseUrl = (() => {
-      switch (network) {
-        case 'mainnet':
-          return 'https://api.etherscan.io/api';
-        case 'sepolia':
-          return 'https://api-sepolia.etherscan.io/api';
-        case 'base-sepolia':
-          return 'https://api-sepolia.basescan.org/api';
-        case 'base':
-          return 'https://api.basescan.org/api';
-        default:
-          return 'https://api-sepolia.basescan.org/api';
-      }
-    })();
-    
     const response = await fetch(
-      `${baseUrl}?module=account&action=balance&address=${address}&tag=latest&apikey=${process.env.BASESCAN_API_KEY || process.env.ETHERSCAN_API_KEY}`
+      `https://api-sepolia.basescan.org/api?module=account&action=balance&address=${address}&tag=latest&apikey=${process.env.BASESCAN_API_KEY}`
     );
     
     const data = await response.json() as EtherscanResponse;

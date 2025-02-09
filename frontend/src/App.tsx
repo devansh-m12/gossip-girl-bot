@@ -8,6 +8,7 @@ import { ThemeProvider } from './components/theme-provider';
 import Feed from './pages/feed';
 import Chat from './pages/chat';
 import Collection from './pages/collection';
+import Privy from './pages/privy';
 
 function App() {
   return (
@@ -15,7 +16,7 @@ function App() {
       <Router>
         <div className="min-h-screen flex flex-col">
           <div className="w-full">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-1000">
               <Navbar />
             </div>
           </div>
@@ -26,6 +27,7 @@ function App() {
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/chat" element={<Chat />} />
                 <Route path="/collection" element={<Collection />} />
+                <Route path="/privy" element={<Privy />} />
                 {/* <Route path="/features" element={<Features />} />
                 <Route path="/pricing" element={<Pricing />} /> */}
               </Routes>

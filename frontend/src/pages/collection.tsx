@@ -1,12 +1,10 @@
 'use client';
 
 import '@coinbase/onchainkit/styles.css'; 
-
- 
+import Collection from '@/components/collection';
 import type { ReactNode } from 'react';
 import { OnchainKitProvider } from '@coinbase/onchainkit';
-import { base } from 'wagmi/chains'; // add baseSepolia for testing
-import Collection from '@/components/collection';
+import { base } from 'wagmi/chains';
  
 export function Providers(props: { children: ReactNode }) {
   return (

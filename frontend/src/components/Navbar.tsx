@@ -44,11 +44,11 @@ export default function Navbar() {
       href: '/feed',
     },
     {
-      title: 'Change Log',
+      title: 'Privy',
       icon: (
         <ScrollText className='h-full w-full text-neutral-600 dark:text-neutral-300' />
       ),
-      href: '/changelog',
+      href: '/privy',
     },
     {
       title: 'Chat',
@@ -67,7 +67,7 @@ export default function Navbar() {
   ];
 
   return (
-    <div className='fixed bottom-2 left-1/2 max-w-full -translate-x-1/2'>
+    <div className='fixed bottom-2 left-1/2 max-w-full -translate-x-1/2 z-50'>
       <Dock className='items-end pb-3'>
         {dockItems.map((item, idx) => (
           item.onClick ? (
