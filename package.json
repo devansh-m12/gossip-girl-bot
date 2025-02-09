@@ -1,0 +1,14 @@
+{
+  "name": "gg",
+  "version": "1.0.0",
+  "description": "## Overview GG is a retro-themed web3 application inspired by the iconic 2000s show \"Gossip Girl\". It combines the drama of secret-spilling with modern blockchain technology, allowing users to create, collect, and trade gossip as NFTs. The platform features a nostalgic UI that captures the essence of the 2010 era while leveraging cutting-edge blockchain capabilities.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "lint": "cd frontend && npm run lint",
+    "preview": "cd frontend && npm run preview"
+  },
+  "author": "",
+  "license": "ISC"
+}
