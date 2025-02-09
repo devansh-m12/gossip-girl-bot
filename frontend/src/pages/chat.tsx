@@ -2,6 +2,7 @@ import { AIInputWithSuggestions } from "@/components/ui/ai-input-with-suggestion
 import { MessageCircle, Globe, Lock } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { TweetCard } from "@/components/TweetCard";
 
 const CUSTOM_ACTIONS = [
     {
@@ -37,12 +38,36 @@ const Chat = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [replay, setReplay] = useState("Hello, I'm your AI friend. How can I help you today?");
     const [error, setError] = useState<string | null>(null);
+    const [tweetData, setTweetData] = useState<{
+        text: string;
+        image?: {
+            ipfsHash: string;
+            ipfsUrl: string;
+        };
+        nft?: {
+            success: boolean;
+            transaction: {
+                hash: string;
+                caip2: string;
+            };
+            metadata: {
+                name: string;
+                description: string;
+                image: string;
+                attributes: Array<{
+                    trait_type: string;
+                    value: string;
+                }>;
+            };
+        };
+    } | null>(null);
 
     const handleSubmit = async (text: string, action?: string) => {
         if (!text.trim() || isSubmitting) return;
 
         setIsSubmitting(true);
         setError(null);
+        setTweetData(null);
         
         try {
             let endpoint = '';
@@ -95,12 +120,12 @@ const Chat = () => {
                 case 'tweet':
                     // Handle tweet response with image and NFT data
                     if (data[0]?.text) {
-                        setReplay(data[0].text);
-                        console.log('Tweet Response:', {
+                        setTweetData({
                             text: data[0].text,
                             image: data.image,
                             nft: data.nft
                         });
+                        setReplay(''); // Clear the replay when showing tweet card
                     }
                     break;
 
@@ -108,7 +133,6 @@ const Chat = () => {
                     // Handle chat response with array of messages
                     if (Array.isArray(data) && data[0]?.text) {
                         setReplay(data[0].text);
-                        console.log('Chat Response:', data);
                     }
                     break;
 
@@ -119,7 +143,6 @@ const Chat = () => {
                     } else {
                         throw new Error('Failed to share your secret');
                     }
-                    console.log('Feed Response:', data);
                     break;
 
                 default:
@@ -156,21 +179,26 @@ const Chat = () => {
                 </div>
 
                 <div className="w-full max-w-2xl">
-                    <div className={cn(
-                        "p-8 rounded-2xl border-2 shadow-lg transition-all duration-300 min-h-[200px] flex items-center justify-center backdrop-blur-md",
-                        error 
-                            ? "bg-red-50/50 dark:bg-red-950/50 border-red-300 dark:border-red-700" 
-                            : "bg-white/50 dark:bg-black/50 border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
-                    )}>
-                        {error ? (
+                    {error ? (
+                        <div className={cn(
+                            "p-8 rounded-2xl border-2 shadow-lg transition-all duration-300 min-h-[200px] flex items-center justify-center backdrop-blur-md",
+                            "bg-red-50/50 dark:bg-red-950/50 border-red-300 dark:border-red-700"
+                        )}>
                             <div className="flex flex-col gap-2">
                                 <p className="text-lg sm:text-xl font-medium text-red-600 dark:text-red-400">Error</p>
                                 <p className="text-base text-red-500 dark:text-red-400">{error}</p>
                             </div>
-                        ) : (
+                        </div>
+                    ) : tweetData ? (
+                        <TweetCard {...tweetData} />
+                    ) : replay && (
+                        <div className={cn(
+                            "p-8 rounded-2xl border-2 shadow-lg transition-all duration-300 min-h-[200px] flex items-center justify-center backdrop-blur-md",
+                            "bg-white/50 dark:bg-black/50 border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
+                        )}>
                             <p className="text-lg sm:text-xl text-gray-800 dark:text-gray-200 leading-relaxed max-w-lg mx-auto">{replay}</p>
-                        )}
-                    </div>
+                        </div>
+                    )}
                     {isSubmitting && (
                         <div className="mt-4 text-center">
                             <p className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">Processing your request...</p>
