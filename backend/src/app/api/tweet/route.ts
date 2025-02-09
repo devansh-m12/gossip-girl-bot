@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateTweetImage } from "../image/utils";
 
+export const maxDuration = 60;
+
 let agentId: string | null = null;
 const username = process.env.AUTONOMY_USERNAME;
 const password = process.env.AUTONOMY_PASSWORD;

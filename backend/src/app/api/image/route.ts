@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateTweetImage } from './utils';
+export const maxDuration = 60;
 
 // Change to Node.js runtime
 export const runtime = 'nodejs';
