@@ -63,27 +63,19 @@ function generateMetadata(name: string, description: string, image: string) {
 
 // Input validation
 interface MintRequest {
-    name: string;
-    description: string;
+
     image: string;
 }
 
 function validateInput(input: any): MintRequest {
-    const { name, description, image } = input;
+    const { image } = input;
     
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-        throw new Error('Invalid or missing name');
-    }
-    
-    if (!description || typeof description !== 'string') {
-        throw new Error('Invalid or missing description');
-    }
     
     if (!image || typeof image !== 'string') {
         throw new Error('Invalid or missing image');
     }
 
-    return { name: name.trim(), description: description.trim(), image };
+    return { image };
 }
 
 export async function POST(request: Request) {
@@ -93,7 +85,9 @@ export async function POST(request: Request) {
 
         // Parse and validate request body
         const rawBody = await request.json();
-        const { name, description, image } = validateInput(rawBody);
+        const { image } = validateInput(rawBody);
+        const name = rawBody.name || 'Gossip Girl';
+        const description = rawBody.description || 'Gossip Girl is a bot that can tweet and mint NFTs';
 
         // Get wallet from Privy
         const wallet = await privy.walletApi.getWallet({ 

@@ -4,6 +4,36 @@ import { NextResponse } from 'next/server'
 // Change to Node.js runtime
 export const runtime = 'nodejs'
 
+async function uploadToPinata(imageBuffer: Buffer | Uint8Array, metadata: any) {
+  const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`
+  const data = new FormData()
+  
+  // Add the file
+  const blob = new Blob([Buffer.from(imageBuffer)], { type: 'image/png' })
+  data.append('file', blob, 'tweet.png')
+  
+  // Add the metadata
+  data.append('pinataMetadata', JSON.stringify({
+    name: `Tweet-${Date.now()}`,
+    keyvalues: metadata
+  }))
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'pinata_api_key': process.env.PINATA_API_KEY || '',
+      'pinata_secret_api_key': process.env.PINATA_SECRET_KEY || ''
+    },
+    body: data
+  })
+
+  if (!res.ok) {
+    throw new Error(`Failed to upload to Pinata: ${await res.text()}`)
+  }
+
+  return await res.json()
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -93,16 +123,16 @@ export async function GET(request: Request) {
           <body>
             <div class="container">
               <div class="header">
-                <img class="avatar" src="https://ui-avatars.com/api/?name=S&background=random" />
+                <img class="avatar" src="https://ui-avatars.com/api/?name=GG&background=random" />
                 <div class="user-info">
                   <div class="name-container">
-                    <span class="name">suki</span>
+                    <span class="name">Gossip Girl</span>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path d="M16 8A8 8 0 110 8a8 8 0 0116 0z" fill="#1D9BF0" />
                       <path d="M7.002 11.233l-2.295-2.295-1.414 1.414 3.709 3.709 7.071-7.071-1.414-1.414-5.657 5.657z" fill="#fff" />
                     </svg>
                   </div>
-                  <span class="handle">@sukislover</span>
+                  <span class="handle">@gossipgirl</span>
                 </div>
               </div>
               <div class="content">${text}</div>
@@ -124,9 +154,20 @@ export async function GET(request: Request) {
         type: 'png'
       })
 
-      return new NextResponse(screenshot, {
+      // Upload to IPFS via Pinata
+      const result = await uploadToPinata(screenshot, {
+        text: text || '',
+        timestamp: timestamp || '',
+        client: client || ''
+      })
+
+      const base64Image = Buffer.from(screenshot).toString('base64')
+
+      return NextResponse.json({
+        ipfsHash: result.IpfsHash,
+        ipfsUrl: `https://gateway.pinata.cloud/ipfs/${result.IpfsHash}`
+      }, {
         headers: {
-          'Content-Type': 'image/png',
           'Cache-Control': 'public, max-age=31536000, immutable'
         }
       })
@@ -136,7 +177,7 @@ export async function GET(request: Request) {
   } catch (e: any) {
     console.error(e)
     return NextResponse.json(
-      { error: `Failed to generate the image: ${e.message}` },
+      { error: `Failed to generate or upload the image: ${e.message}` },
       { status: 500 }
     )
   }

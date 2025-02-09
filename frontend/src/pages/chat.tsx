@@ -90,8 +90,41 @@ const Chat = () => {
 
             const data = await response.json();
 
-            setReplay(data.message);
-            console.log(`${action} Response:`, data);
+            // Handle different response formats based on action
+            switch (action?.toLowerCase() || 'general') {
+                case 'tweet':
+                    // Handle tweet response with image and NFT data
+                    if (data[0]?.text) {
+                        setReplay(data[0].text);
+                        console.log('Tweet Response:', {
+                            text: data[0].text,
+                            image: data.image,
+                            nft: data.nft
+                        });
+                    }
+                    break;
+
+                case 'general':
+                    // Handle chat response with array of messages
+                    if (Array.isArray(data) && data[0]?.text) {
+                        setReplay(data[0].text);
+                        console.log('Chat Response:', data);
+                    }
+                    break;
+
+                case 'spill secret':
+                    // Handle feed response with status
+                    if (data.status === 'completed') {
+                        setReplay('Your secret has been successfully shared!');
+                    } else {
+                        throw new Error('Failed to share your secret');
+                    }
+                    console.log('Feed Response:', data);
+                    break;
+
+                default:
+                    setReplay('Received response but action type is unknown');
+            }
         } catch (error) {
             console.error(`Error submitting ${action}:`, error);
             setError(error instanceof Error ? error.message : 'An unexpected error occurred');
