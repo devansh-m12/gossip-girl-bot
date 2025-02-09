@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         const callUrl = `${url}/${agentId}/message`;
         console.log(callUrl);
         const body = {
-            "text": `Using this prompt to make a tweet post. \n\n ${message}`,
+            "text": `make it as a tweet post. ${message}`,
         }
         
         const chatResponse = await fetch(callUrl, {
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
             },
             body: JSON.stringify(body)
         });
-        
+        console.log(chatResponse);
         if (!chatResponse.ok) {
             throw new Error(`Chat request failed: ${chatResponse.status} ${chatResponse.statusText}`);
         }
