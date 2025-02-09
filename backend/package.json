@@ -17,6 +17,7 @@
     "@solana/web3.js": "^1.95.3",
     "@thirdweb-dev/sdk": "^4.0.99",
     "@types/puppeteer": "^5.4.7",
+    "@vercel/og": "^0.6.5",
     "next": "15.1.6",
     "nft.storage": "^7.2.0",
     "puppeteer": "^24.2.0",

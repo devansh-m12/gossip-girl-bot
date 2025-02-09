@@ -1,4 +1,5 @@
-import puppeteer from 'puppeteer';
+import { ImageResponse } from '@vercel/og';
+import React from 'react';
 
 interface TweetImageParams {
   text: string;
@@ -47,112 +48,128 @@ export async function generateTweetImage({
   timestamp = "6:17 PM · Feb 5, 2023",
   client = "Twitter for LG Smart Fridge"
 }: TweetImageParams) {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
-  
   try {
-    const page = await browser.newPage();
-    await page.setViewport({ width: 755, height: 345 });
+    const imageResponse = new ImageResponse(
+      React.createElement('div', {
+        style: {
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: '#000000',
+          padding: '20px',
+          fontFamily: 'system-ui'
+        }
+      }, [
+        React.createElement('div', {
+          key: 'header',
+          style: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '12px'
+          }
+        }, [
+          React.createElement('img', {
+            key: 'avatar',
+            src: 'https://ui-avatars.com/api/?name=GG&background=random',
+            style: {
+              width: '48px',
+              height: '48px',
+              borderRadius: '24px'
+            }
+          }),
+          React.createElement('div', {
+            key: 'user-info',
+            style: {
+              display: 'flex',
+              flexDirection: 'column'
+            }
+          }, [
+            React.createElement('div', {
+              key: 'name-container',
+              style: {
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }
+            }, [
+              React.createElement('span', {
+                key: 'name',
+                style: {
+                  color: '#ffffff',
+                  fontSize: '16px',
+                  fontWeight: 'bold'
+                }
+              }, 'Gossip Girl'),
+              React.createElement('svg', {
+                key: 'verified',
+                width: 16,
+                height: 16,
+                viewBox: '0 0 16 16',
+                style: { fill: '#1D9BF0' }
+              }, [
+                React.createElement('path', {
+                  key: 'bg',
+                  d: 'M16 8A8 8 0 110 8a8 8 0 0116 0z'
+                }),
+                React.createElement('path', {
+                  key: 'check',
+                  d: 'M7.002 11.233l-2.295-2.295-1.414 1.414 3.709 3.709 7.071-7.071-1.414-1.414-5.657 5.657z',
+                  fill: '#fff'
+                })
+              ])
+            ]),
+            React.createElement('span', {
+              key: 'handle',
+              style: {
+                color: '#71767B',
+                fontSize: '14px'
+              }
+            }, '@gossipgirl')
+          ])
+        ]),
+        React.createElement('div', {
+          key: 'content',
+          style: {
+            color: '#ffffff',
+            fontSize: '24px',
+            marginBottom: '12px'
+          }
+        }, text),
+        React.createElement('div', {
+          key: 'meta',
+          style: {
+            color: '#71767B',
+            fontSize: '14px',
+            marginBottom: '16px'
+          }
+        }, `${timestamp} · ${client}`),
+        React.createElement('div', {
+          key: 'metrics',
+          style: {
+            display: 'flex',
+            gap: '24px',
+            color: '#71767B',
+            fontSize: '14px'
+          }
+        }, [
+          React.createElement('span', { key: 'retweets' }, `${retweets} Retweets`),
+          React.createElement('span', { key: 'quotes' }, `${quotes} Quote Tweets`),
+          React.createElement('span', { key: 'likes' }, `${likes} Likes`)
+        ])
+      ]),
+      {
+        width: 755,
+        height: 345,
+      }
+    );
 
-    const html = `
-      <html>
-        <head>
-          <style>
-            body {
-              margin: 0;
-              font-family: system-ui, -apple-system, sans-serif;
-            }
-            .container {
-              height: 100%;
-              width: 100%;
-              display: flex;
-              flex-direction: column;
-              background-color: #000000;
-              padding: 20px;
-              box-sizing: border-box;
-            }
-            .header {
-              display: flex;
-              align-items: center;
-              gap: 12px;
-              margin-bottom: 12px;
-            }
-            .avatar {
-              width: 48px;
-              height: 48px;
-              border-radius: 24px;
-            }
-            .user-info {
-              display: flex;
-              flex-direction: column;
-            }
-            .name-container {
-              display: flex;
-              align-items: center;
-              gap: 4px;
-            }
-            .name {
-              color: #ffffff;
-              font-size: 16px;
-              font-weight: bold;
-            }
-            .handle {
-              color: #71767B;
-              font-size: 14px;
-            }
-            .content {
-              color: #ffffff;
-              font-size: 24px;
-              margin-bottom: 12px;
-            }
-            .meta {
-              color: #71767B;
-              font-size: 14px;
-              margin-bottom: 16px;
-            }
-            .metrics {
-              display: flex;
-              gap: 24px;
-              color: #71767B;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <img class="avatar" src="https://ui-avatars.com/api/?name=GG&background=random" />
-              <div class="user-info">
-                <div class="name-container">
-                  <span class="name">Gossip Girl</span>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M16 8A8 8 0 110 8a8 8 0 0116 0z" fill="#1D9BF0" />
-                    <path d="M7.002 11.233l-2.295-2.295-1.414 1.414 3.709 3.709 7.071-7.071-1.414-1.414-5.657 5.657z" fill="#fff" />
-                  </svg>
-                </div>
-                <span class="handle">@gossipgirl</span>
-              </div>
-            </div>
-            <div class="content">${text}</div>
-            <div class="meta">${timestamp} · ${client}</div>
-            <div class="metrics">
-              <span>${retweets} Retweets</span>
-              <span>${quotes} Quote Tweets</span>
-              <span>${likes} Likes</span>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
+    // Convert the image response to a buffer
+    const arrayBuffer = await imageResponse.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-    await page.setContent(html);
-    const screenshot = await page.screenshot({
-      type: 'png'
-    });
-
-    const result = await uploadToPinata(screenshot, {
+    const result = await uploadToPinata(buffer, {
       text,
       timestamp,
       client
@@ -162,7 +179,8 @@ export async function generateTweetImage({
       ipfsHash: result.IpfsHash,
       ipfsUrl: `https://gateway.pinata.cloud/ipfs/${result.IpfsHash}`
     };
-  } finally {
-    await browser.close();
+  } catch (error) {
+    console.error('Error generating tweet image:', error);
+    throw error;
   }
 } 
