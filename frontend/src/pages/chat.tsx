@@ -135,46 +135,48 @@ const Chat = () => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 from-white to-gray-50 dark:from-gray-900 dark:to-black">
-            <div className="w-full max-w-4xl mx-auto text-center space-y-8">
-                <h2 className="text-3xl sm:text-5xl font-bold dark:text-white text-black">
-                    Welcome, Upper East Sider
-                </h2>
-                <h3 className="text-xl sm:text-2xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto font-light">
-                    Ready to spill some tea? Choose your message type and let the drama unfold...
-                </h3>
-                <div className="w-full max-w-2xl mx-auto mt-8">
-                    <div className="w-full max-w-xl mx-auto">
-                        <AIInputWithSuggestions 
-                            actions={CUSTOM_ACTIONS}
-                            defaultSelected="General"
-                            placeholder="XOXO, Gossip Girl..."
-                            onSubmit={handleSubmit}
-                        />
-                    </div>
+        <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-black">
+            <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center gap-8 backdrop-blur-sm bg-white/30 dark:bg-black/30 p-8 rounded-3xl shadow-xl border border-white/20 dark:border-white/10">
+                <div className="text-center space-y-4">
+                    <h2 className="text-3xl sm:text-5xl font-bold dark:text-white text-black animate-fade-in">
+                        Welcome, Upper East Sider
+                    </h2>
+                    <h3 className="text-xl sm:text-2xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto font-light">
+                        Ready to spill some tea? Choose your message type and let the drama unfold...
+                    </h3>
                 </div>
-            </div>
-            <div className="w-full max-w-xl mx-auto mt-8">
-                <div className={cn(
-                    "p-6 rounded-2xl border-2 shadow-lg transition-all duration-300 min-h-[200px] flex items-center justify-center",
-                    error 
-                        ? "bg-red-50/50 dark:bg-red-950/50 border-red-300 dark:border-red-700" 
-                        : "bg-white/50 dark:bg-black/50 border-black/10 dark:border-white/10"
-                )}>
-                    {error ? (
-                        <div className="flex flex-col gap-2">
-                            <p className="text-lg sm:text-xl font-medium text-red-600 dark:text-red-400">Error</p>
-                            <p className="text-base text-red-500 dark:text-red-400">{error}</p>
+
+                <div className="w-full max-w-2xl">
+                    <AIInputWithSuggestions 
+                        actions={CUSTOM_ACTIONS}
+                        defaultSelected="General"
+                        placeholder="XOXO, Gossip Girl..."
+                        onSubmit={handleSubmit}
+                    />
+                </div>
+
+                <div className="w-full max-w-2xl">
+                    <div className={cn(
+                        "p-8 rounded-2xl border-2 shadow-lg transition-all duration-300 min-h-[200px] flex items-center justify-center backdrop-blur-md",
+                        error 
+                            ? "bg-red-50/50 dark:bg-red-950/50 border-red-300 dark:border-red-700" 
+                            : "bg-white/50 dark:bg-black/50 border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
+                    )}>
+                        {error ? (
+                            <div className="flex flex-col gap-2">
+                                <p className="text-lg sm:text-xl font-medium text-red-600 dark:text-red-400">Error</p>
+                                <p className="text-base text-red-500 dark:text-red-400">{error}</p>
+                            </div>
+                        ) : (
+                            <p className="text-lg sm:text-xl text-gray-800 dark:text-gray-200 leading-relaxed max-w-lg mx-auto">{replay}</p>
+                        )}
+                    </div>
+                    {isSubmitting && (
+                        <div className="mt-4 text-center">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">Processing your request...</p>
                         </div>
-                    ) : (
-                        <p className="text-lg sm:text-xl text-gray-800 dark:text-gray-200 leading-relaxed max-w-lg mx-auto">{replay}</p>
                     )}
                 </div>
-                {isSubmitting && (
-                    <div className="mt-4 text-center">
-                        <p className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">Processing your request...</p>
-                    </div>
-                )}
             </div>
         </div>
     );
