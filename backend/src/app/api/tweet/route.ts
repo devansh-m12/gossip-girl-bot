@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { generateTweetImage } from "../image/utils";
+
 let agentId: string | null = null;
 const username = process.env.AUTONOMY_USERNAME;
 const password = process.env.AUTONOMY_PASSWORD;
@@ -52,40 +54,17 @@ export async function POST(req: NextRequest) {
         
         const chatResult = await chatResponse.json();
         console.log(chatResult?.[0]?.text);
-        // return NextResponse.json(chatResult);
-        // const chatResult = {
-        //     message: message,
-        //     type: type
-        // }
 
-        // Get the host from the environment or use a default
-        const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
-        const host = process.env.VERCEL_URL || 'localhost:3000';
-        const baseImageUrl = `${protocol}://${host}/api/image`;
-
-        // Create URL with query parameters
-        const imageUrlWithParams = new URL(baseImageUrl);
-        imageUrlWithParams.searchParams.append('text', chatResult?.[0]?.text || 'Hello Puppys');
-        imageUrlWithParams.searchParams.append('timestamp', new Date().toLocaleString());
-        imageUrlWithParams.searchParams.append('client', 'Twitter Web App');
-
-        const imageResponse = await fetch(imageUrlWithParams.toString(), {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            // Convert message to URL parameters
-            cache: 'no-store'
+        // Generate tweet image directly using the utility function
+        const imageData = await generateTweetImage({
+            text: chatResult?.[0]?.text || 'Hello Puppys',
+            timestamp: new Date().toLocaleString(),
+            client: 'Gossip Girl Web'
         });
 
-        if (!imageResponse.ok) {
-            throw new Error(`Image API request failed: ${imageResponse.status} ${imageResponse.statusText}`);
-        }
-
-        const imageData = await imageResponse.json();
-        console.log(imageData);
-
         // Generate NFT using the IPFS image
+        const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+        const host = process.env.VERCEL_URL || 'localhost:3000';
         const nftUrl = `${protocol}://${host}/api/nft`;
 
         const nftResponse = await fetch(nftUrl, {
